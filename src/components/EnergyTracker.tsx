@@ -4,6 +4,7 @@ import { useState } from "react";
 import { readings as initialReadings } from "@/data/readings";
 import ConsumptionChart from "./energy/ConsumptionChart";
 import ReadingForm from "./energy/ReadingForm";
+import { ReadingsTable } from "./energy/ReadingsTable";
 
 export default function EnergyTracker() {
   const [readings, setReadings] = useState(initialReadings);
@@ -22,6 +23,7 @@ export default function EnergyTracker() {
       <h1 className="text-3xl font-bold">Energy Consumption Tracker</h1>
       <ReadingForm onSubmit={addReading} />
       <ConsumptionChart data={readings} />
+      <ReadingsTable readings={readings} />
     </div>
   );
 }
