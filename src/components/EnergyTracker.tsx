@@ -1,198 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { Bell, BellOff } from 'lucide-react';
-import { readings as initialReadings } from '@/data/readings';
-
-const DAILY_SAFE = 6;
-const DAILY_MAX = 6.66;
-const MONTHLY_LIMIT = DAILY_MAX * 30;
-
-interface Reading {
-  date: string;
-  value: number;
-  consumption: number;
-}
+import { useState } from "react";
+import { readings as initialReadings } from "@/data/readings";
+import ConsumptionChart from "./energy/ConsumptionChart";
+import ReadingForm from "./energy/ReadingForm";
 
 export default function EnergyTracker() {
-  const [readings, setReadings] = useState<Reading[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('energyReadings');
-      return saved ? JSON.parse(saved) : initialReadings;
-    }
-    return initialReadings;
-  });
-  
-  const [newReading, setNewReading] = useState('');
-  const [notifications, setNotifications] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('energyNotifications');
-      return saved ? JSON.parse(saved) : true;
-    }
-    return true;
-  });
+  const [readings, setReadings] = useState(initialReadings);
 
-  useEffect(() => {
-    localStorage.setItem('energyReadings', JSON.stringify(readings));
-    localStorage.setItem('energyNotifications', JSON.stringify(notifications));
-
-    if (notifications && readings.length > 0) {
-      const lastReading = readings[readings.length - 1];
-      const total = getTotalConsumption();
-      
-      if (lastReading.consumption > DAILY_SAFE) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Energy Alert', {
-            body: `Daily consumption (${lastReading.consumption.toFixed(2)} kWh) above safe target (${DAILY_SAFE} kWh)`,
-          });
-        }
-      }
-
-      const remainingDays = getDaysRemaining();
-      if (remainingDays <= 5) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Monthly Reset Soon', {
-            body: `${remainingDays} days left in current tracking period`,
-          });
-        }
-      }
-    }
-  }, [readings, notifications]);
-
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setNotifications(true);
-      }
-    }
-  };
-
-  const addReading = (e: React.FormEvent) => {
-    e.preventDefault();
-    const value = parseFloat(newReading);
-    if (isNaN(value)) return;
-
-    const newEntry = {
-      date: new Date().toLocaleDateString(),
-      value: value,
-      consumption: readings.length > 0 
-        ? value - readings[readings.length - 1].value 
-        : value - readings[0].value
+  const addReading = (value: number) => {
+    const newReading = {
+      date: new Date().toLocaleDateString("en-GB"),
+      value,
+      consumption: value - readings[readings.length - 1].value
     };
-
-    setReadings([...readings, newEntry]);
-    setNewReading('');
-  };
-
-  const getTotalConsumption = () => {
-    return readings.reduce((sum, reading) => sum + reading.consumption, 0);
-  };
-
-  const getDaysRemaining = () => {
-    const startDate = new Date(readings[0].date);
-    const currentDate = new Date();
-    const daysPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    return 30 - daysPassed;
-  };
-
-  const getRemainingDaily = () => {
-    const daysLeft = getDaysRemaining();
-    if (daysLeft <= 0) return 0;
-    const remaining = MONTHLY_LIMIT - getTotalConsumption();
-    return (remaining / daysLeft).toFixed(2);
-  };
-
-  const getStatus = () => {
-    const lastReading = readings[readings.length - 1];
-    if (!lastReading) return 'normal';
-    if (lastReading.consumption > DAILY_MAX) return 'alert';
-    if (lastReading.consumption > DAILY_SAFE) return 'warning';
-    return 'success';
-  };
-
-  const getAverageDailyConsumption = () => {
-    const total = getTotalConsumption();
-    const days = readings.length;
-    return days > 0 ? (total / days).toFixed(2) : '0';
+    setReadings([...readings, newReading]);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 bg-white rounded-lg shadow-lg p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Energy Consumption Tracker</h1>
-        <button 
-          className="p-2 rounded-full hover:bg-gray-100"
-          onClick={() => {
-            if (notifications) {
-              setNotifications(false);
-            } else {
-              requestNotificationPermission();
-            }
-          }}
-        >
-          {notifications ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
-        </button>
-      </div>
-
-      <form onSubmit={addReading} className="flex gap-2">
-        <input
-          type="number"
-          step="0.01"
-          value={newReading}
-          onChange={(e) => setNewReading(e.target.value)}
-          placeholder="New reading (kWh)"
-          className="flex-1 p-2 border rounded"
-        />
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Add
-        </button>
-      </form>
-
-      <div className={`p-4 rounded ${
-        getStatus() === 'alert' ? 'bg-red-100' :
-        getStatus() === 'warning' ? 'bg-yellow-100' :
-        'bg-green-100'
-      }`}>
-        <div className="space-y-2">
-          <p>Total consumption: {getTotalConsumption().toFixed(2)} kWh</p>
-          <p>Average daily consumption: {getAverageDailyConsumption()} kWh</p>
-          <p>Remaining daily target: {getRemainingDaily()} kWh</p>
-          <p>Days remaining: {getDaysRemaining()}</p>
-        </div>
-      </div>
-
-      <div className="h-64">
-        <LineChart width={600} height={250} data={readings}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="consumption" stroke="#2563eb" />
-        </LineChart>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="text-left">Date</th>
-              <th className="text-right">Reading (kWh)</th>
-              <th className="text-right">Consumption</th>
-            </tr>
-          </thead>
-          <tbody>
-            {readings.map((reading, index) => (
-              <tr key={index} className="border-t">
-                <td className="py-2">{reading.date}</td>
-                <td className="text-right">{reading.value}</td>
-                <td className="text-right">{reading.consumption.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="max-w-4xl mx-auto space-y-8">
+      <h1 className="text-3xl font-bold">Energy Consumption Tracker</h1>
+      <ReadingForm onSubmit={addReading} />
+      <ConsumptionChart data={readings} />
     </div>
   );
 }
