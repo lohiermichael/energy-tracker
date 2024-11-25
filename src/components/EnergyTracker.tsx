@@ -3,23 +3,25 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Bell, BellOff } from 'lucide-react';
+import { readings as initialReadings } from '@/data/readings';
 
-const INITIAL_READING = 3835.2;
 const DAILY_SAFE = 6;
 const DAILY_MAX = 6.66;
 const MONTHLY_LIMIT = DAILY_MAX * 30;
 
+interface Reading {
+  date: string;
+  value: number;
+  consumption: number;
+}
+
 export default function EnergyTracker() {
-  const [readings, setReadings] = useState<Array<{
-    date: string;
-    value: number;
-    consumption: number;
-  }>>(() => {
+  const [readings, setReadings] = useState<Reading[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('energyReadings');
-      return saved ? JSON.parse(saved) : [];
+      return saved ? JSON.parse(saved) : initialReadings;
     }
-    return [];
+    return initialReadings;
   });
   
   const [newReading, setNewReading] = useState('');
@@ -47,10 +49,11 @@ export default function EnergyTracker() {
         }
       }
 
-      if ((30 - readings.length) <= 5) {
+      const remainingDays = getDaysRemaining();
+      if (remainingDays <= 5) {
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('Monthly Reset Soon', {
-            body: `${30 - readings.length} days left in current tracking period`,
+            body: `${remainingDays} days left in current tracking period`,
           });
         }
       }
@@ -76,7 +79,7 @@ export default function EnergyTracker() {
       value: value,
       consumption: readings.length > 0 
         ? value - readings[readings.length - 1].value 
-        : value - INITIAL_READING
+        : value - readings[0].value
     };
 
     setReadings([...readings, newEntry]);
@@ -87,8 +90,15 @@ export default function EnergyTracker() {
     return readings.reduce((sum, reading) => sum + reading.consumption, 0);
   };
 
+  const getDaysRemaining = () => {
+    const startDate = new Date(readings[0].date);
+    const currentDate = new Date();
+    const daysPassed = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    return 30 - daysPassed;
+  };
+
   const getRemainingDaily = () => {
-    const daysLeft = 30 - readings.length;
+    const daysLeft = getDaysRemaining();
     if (daysLeft <= 0) return 0;
     const remaining = MONTHLY_LIMIT - getTotalConsumption();
     return (remaining / daysLeft).toFixed(2);
@@ -100,6 +110,12 @@ export default function EnergyTracker() {
     if (lastReading.consumption > DAILY_MAX) return 'alert';
     if (lastReading.consumption > DAILY_SAFE) return 'warning';
     return 'success';
+  };
+
+  const getAverageDailyConsumption = () => {
+    const total = getTotalConsumption();
+    const days = readings.length;
+    return days > 0 ? (total / days).toFixed(2) : '0';
   };
 
   return (
@@ -141,8 +157,9 @@ export default function EnergyTracker() {
       }`}>
         <div className="space-y-2">
           <p>Total consumption: {getTotalConsumption().toFixed(2)} kWh</p>
+          <p>Average daily consumption: {getAverageDailyConsumption()} kWh</p>
           <p>Remaining daily target: {getRemainingDaily()} kWh</p>
-          <p>Days remaining: {30 - readings.length}</p>
+          <p>Days remaining: {getDaysRemaining()}</p>
         </div>
       </div>
 
