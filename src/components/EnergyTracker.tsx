@@ -1,32 +1,63 @@
 "use client"
 
-import { useState } from "react";
-import { readings as initialReadings } from "@/data/readings";
+import { useEnergyReadings } from "./energy/hooks/useEnergyReadings";
 import ConsumptionChart from "./energy/ConsumptionChart";
 import ReadingForm from "./energy/ReadingForm";
 import { ReadingsTable } from "./energy/ReadingsTable";
+import { ConsumptionStats } from "./energy/ConsumptionStats";
 import { processReadings } from "@/utils/processReadings";
-import type { Reading } from "@/components/types";
+import { DAILY_SAFE, DAILY_MAX } from "./energy/constants";
 
 export default function EnergyTracker() {
-  const [readings, setReadings] = useState<Reading[]>(initialReadings);
+  const { readings, loading, error, addReading } = useEnergyReadings();
 
-  const addReading = (value: number) => {
-    const newReading = {
-      date: new Date().toLocaleDateString("en-GB"),
-      value
-    };
-    setReadings([...readings, newReading]);
-  };
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+        <p className="mt-4">Loading readings...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      </div>
+    );
+  }
 
   const processedReadings = processReadings(readings);
+  
+  // Calculate status for ConsumptionStats
+  const getStatus = () => {
+    if (processedReadings.length === 0) return 'success';
+    const lastReading = processedReadings[processedReadings.length - 1];
+    if (lastReading.consumption > DAILY_MAX) return 'alert';
+    if (lastReading.consumption > DAILY_SAFE) return 'warning';
+    return 'success';
+  };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 p-4">
       <h1 className="text-3xl font-bold">Energy Consumption Tracker</h1>
       <ReadingForm onSubmit={addReading} />
-      <ConsumptionChart data={processedReadings} />
-      <ReadingsTable readings={processedReadings} />
+      {processedReadings.length > 0 ? (
+        <>
+          <ConsumptionStats 
+            readings={processedReadings} 
+            status={getStatus()} 
+          />
+          <ConsumptionChart data={processedReadings} />
+          <ReadingsTable readings={processedReadings} />
+        </>
+      ) : (
+        <p className="text-center text-gray-500">No readings available. Add your first reading above.</p>
+      )}
     </div>
   );
 }
