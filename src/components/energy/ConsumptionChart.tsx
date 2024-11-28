@@ -70,8 +70,16 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
               <Tooltip />
               <Legend />
               <Bar dataKey="consumption" fill="#2563eb" name="Daily Usage" />
-              <ReferenceLine y={DAILY_SAFE} stroke="green" strokeDasharray="3 3" label={{ value: 'Safe Limit', fill: 'green', position: 'right' }} />
-              <ReferenceLine y={DAILY_MAX} stroke="red" strokeDasharray="3 3" label={{ value: 'Max Limit', fill: 'red', position: 'right' }} />
+              <ReferenceLine
+                y={DAILY_SAFE}
+                stroke="green"
+                strokeDasharray="3 3"
+                label={{ value: 'Safe Limit', fill: 'green', position: 'right' }} />
+              <ReferenceLine
+                y={DAILY_MAX}
+                stroke="red"
+                strokeDasharray="3 3"
+                label={{ value: 'Max Limit', fill: 'red', position: 'right' }} />
               {barLeft && barRight && (
                 <ReferenceArea
                   x1={barLeft}
@@ -96,9 +104,23 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
               <YAxis domain={['dataMin - 1', 'dataMax + 1']} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="meterReading" stroke="#2563eb" name="Actual Reading" />
-              <Line type="monotone" dataKey="safeTarget" stroke="green" strokeDasharray="3 3" name="Safe Target" />
-              <Line type="monotone" dataKey="maxTarget" stroke="red" strokeDasharray="3 3" name="Max Target" />
+              <Line
+                type="monotone"
+                dataKey="meterReading"
+                stroke="#2563eb"
+                name="Actual Reading" />
+              <Line
+                type="monotone"
+                dataKey="safeTarget"
+                stroke="green"
+                strokeDasharray="3 3"
+                name="Safe Target" />
+              <Line
+                type="monotone"
+                dataKey="maxTarget"
+                stroke="red"
+                strokeDasharray="3 3"
+                name="Max Target" />
             </LineChart>
           </ResponsiveContainer>
         </div>
