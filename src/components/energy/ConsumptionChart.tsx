@@ -1,5 +1,5 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts';
-import { DAILY_SAFE, DAILY_MAX } from './constants';
+import { DAILY_SAFE, DAILY_MAX, DAILY_EXTRA_CHARGE } from './constants';
 import { useState } from 'react';
 
 interface ConsumptionChartProps {
@@ -23,7 +23,8 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
     date: reading.date,
     meterReading: reading.value,
     safeTarget: data[0].value + (DAILY_SAFE * index),
-    maxTarget: data[0].value + (DAILY_MAX * index)
+    maxTarget: data[0].value + (DAILY_MAX * index),
+    extraChargeTarget: data[0].value + (DAILY_EXTRA_CHARGE * index),
   }));
 
   const minConsumption = Math.min(...dailyData.map(d => d.consumption));
@@ -77,9 +78,14 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
                 label={{ value: 'Safe Limit', fill: 'green', position: 'right' }} />
               <ReferenceLine
                 y={DAILY_MAX}
+                stroke="purple"
+                strokeDasharray="3 3"
+                label={{ value: 'Max Limit', fill: 'purple', position: 'right' }} />
+              <ReferenceLine
+                y={DAILY_EXTRA_CHARGE}
                 stroke="red"
                 strokeDasharray="3 3"
-                label={{ value: 'Max Limit', fill: 'red', position: 'right' }} />
+                label={{ value: 'Extra Charge Limit', fill: 'red', position: 'right' }} />
               {barLeft && barRight && (
                 <ReferenceArea
                   x1={barLeft}
@@ -118,9 +124,15 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
               <Line
                 type="monotone"
                 dataKey="maxTarget"
-                stroke="red"
+                stroke="purple"
                 strokeDasharray="3 3"
                 name="Max Target" />
+              <Line
+                type="monotone"
+                dataKey="extraChargeTarget"
+                stroke="red"
+                strokeDasharray="3 3"
+                name="Extra Charge Target" />
             </LineChart>
           </ResponsiveContainer>
         </div>
