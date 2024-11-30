@@ -21,10 +21,10 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
 
   const cumulativeData = data.map((reading, index) => ({
     date: reading.date,
-    meterReading: reading.value,
-    safeTarget: data[0].value + (DAILY_SAFE * index),
-    maxTarget: data[0].value + (DAILY_MAX * index),
-    extraChargeTarget: data[0].value + (DAILY_EXTRA_CHARGE * index),
+    meterReading: Number(reading.value.toFixed(2)),
+    safeTarget: Number((data[0].value + (DAILY_SAFE * index)).toFixed(2)),
+    maxTarget: Number((data[0].value + (DAILY_MAX * index)).toFixed(2)),
+    extraChargeTarget: Number((data[0].value + (DAILY_EXTRA_CHARGE * index)).toFixed(2)),
   }));
 
   const minConsumption = Math.min(...dailyData.map(d => d.consumption));
@@ -37,20 +37,13 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
     if (barLeft && e) setBarRight(e.activeLabel);
   };
 
-  const handleBarMouseUp = () => {
-    if (barLeft && barRight) {
-      const startIndex = dailyData.findIndex(d => d.date === barLeft);
-      const endIndex = dailyData.findIndex(d => d.date === barRight);
-      if (startIndex !== endIndex) {
-        const newData = dailyData.slice(
-          Math.min(startIndex, endIndex),
-          Math.max(startIndex, endIndex) + 1
-        );
-        // Update zoom here
-      }
+  const formatYAxis = (value: number) => value.toFixed(2);
+
+  const formatTooltip = (value: any) => {
+    if (typeof value === 'number') {
+      return [value.toFixed(2), ''];
     }
-    setBarLeft(undefined);
-    setBarRight(undefined);
+    return [value, ''];
   };
 
   return (
@@ -63,12 +56,14 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
               data={dailyData}
               onMouseDown={handleBarMouseDown}
               onMouseMove={handleBarMouseMove}
-              onMouseUp={handleBarMouseUp}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis domain={[minConsumption - 0.5, DAILY_MAX + 0.5]} />
-              <Tooltip />
+              <YAxis 
+                domain={[minConsumption - 0.5, DAILY_MAX + 0.5]} 
+                tickFormatter={formatYAxis}
+              />
+              <Tooltip formatter={formatTooltip} />
               <Legend />
               <Bar dataKey="consumption" fill="#2563eb" name="Daily Usage" />
               <ReferenceLine
@@ -107,7 +102,10 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
             <LineChart data={cumulativeData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis domain={['dataMin - 1', 'dataMax + 1']} />
+              <YAxis 
+                domain={['dataMin - 1', 'dataMax + 1']} 
+                tickFormatter={formatYAxis}
+              />
               <Tooltip />
               <Legend />
               <Line
