@@ -7,24 +7,32 @@ interface ConsumptionStatsProps {
 }
 
 export function ConsumptionStats({ readings, status }: ConsumptionStatsProps) {
-  const getTotalConsumption = () => 
-    readings.reduce((sum, reading) => sum + reading.consumption, 0);
+  const getTotalConsumption = () => {
+    return readings.slice(1).reduce((sum, reading, index) => {
+      const consumption = reading.value - readings[index].value;
+      return sum + consumption;
+    }, 0);
+  };
 
   const getAverageDailyConsumption = () => {
     const total = getTotalConsumption();
-    const days = readings.length;
+    const days = readings.length - 1; // Subtract 1 because first reading has no consumption
     return days > 0 ? (total / days).toFixed(2) : '0';
   };
 
   const getDaysRemaining = () => {
-    const startDate = new Date(readings[0].date);
+    if (readings.length === 0) return 0;
+    const startDate = new Date(readings[0].date.split('/').reverse().join('-'));
+    const lastDate = new Date(startDate);
+    lastDate.setDate(startDate.getDate() + 30);
     const currentDate = new Date();
-    return 30 - Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const remaining = Math.ceil((lastDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, remaining);
   };
 
   const getRemainingDaily = () => {
     const daysLeft = getDaysRemaining();
-    if (daysLeft <= 0) return 0;
+    if (daysLeft <= 0) return '0.00';
     const remaining = MONTHLY_LIMIT - getTotalConsumption();
     return (remaining / daysLeft).toFixed(2);
   };
