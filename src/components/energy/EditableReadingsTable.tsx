@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { Reading } from "../types";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Check, X, Pencil } from "lucide-react";
 
 interface EditableReadingsTableProps {
   readings: Reading[];
@@ -114,32 +114,41 @@ export function EditableReadingsTable({ readings }: EditableReadingsTableProps) 
                   )}
                 </td>
                 <td className="text-right">{reading.consumption.toFixed(2)}</td>
-                <td className="text-right space-x-2">
-                  {editingId === index ? (
-                    <>
+                <td className="text-right">
+                  <div className="flex justify-end gap-2">
+                    {editingId === index ? (
+                      <>
+                        <button
+                          onClick={() => handleSave(reading, index)}
+                          className={`inline-flex items-center justify-center rounded-full w-8 h-8 bg-green-100 text-green-600 hover:bg-green-200 transition-colors ${
+                            isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          disabled={isSaving}
+                          title="Save"
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          className={`inline-flex items-center justify-center rounded-full w-8 h-8 bg-red-100 text-red-600 hover:bg-red-200 transition-colors ${
+                            isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          disabled={isSaving}
+                          title="Cancel"
+                        >
+                          <X size={16} />
+                        </button>
+                      </>
+                    ) : (
                       <button
-                        onClick={() => handleSave(reading, index)}
-                        className={`text-green-600 hover:text-green-800 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={isSaving}
+                        onClick={() => handleEdit(index, reading.value)}
+                        className="inline-flex items-center justify-center rounded-full w-8 h-8 bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        title="Edit"
                       >
-                        {isSaving ? 'Saving...' : 'Save'}
+                        <Pencil size={16} />
                       </button>
-                      <button
-                        onClick={handleCancel}
-                        className={`text-red-600 hover:text-red-800 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={isSaving}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => handleEdit(index, reading.value)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      Edit
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
