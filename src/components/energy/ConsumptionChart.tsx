@@ -38,12 +38,11 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
   };
 
   const formatYAxis = (value: number) => value.toFixed(2);
-
   const formatTooltip = (value: any) => {
     if (typeof value === 'number') {
-      return [value.toFixed(2), ''];
+      return `${value.toFixed(2)}`;
     }
-    return [value, ''];
+    return value;
   };
 
   return (
