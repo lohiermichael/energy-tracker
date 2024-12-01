@@ -1,40 +1,29 @@
-"use client";
-
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, addDoc, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Reading } from '../../types';
 
-interface FirebaseReading extends Reading {
-  id: string;
-}
-
 export function useEnergyReadings() {
-  const [readings, setReadings] = useState<FirebaseReading[]>([]);
+  const [readings, setReadings] = useState<Reading[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const readingsQuery = query(
-      collection(db, 'readings'),
-      orderBy('timestamp', 'asc')
-    );
+    const q = query(collection(db, 'readings'), orderBy('timestamp', 'asc'));
 
-    const unsubscribe = onSnapshot(readingsQuery, 
+    const unsubscribe = onSnapshot(q, 
       (snapshot) => {
-        const fetchedReadings: FirebaseReading[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          fetchedReadings.push({
-            id: doc.id,
-            date: data.date,
-            value: data.value,
-          });
-        });
-        setReadings(fetchedReadings);
+        const newReadings = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Reading[];
+        setReadings(newReadings);
+        setIsLoading(false);
       },
       (error) => {
         console.error('Error fetching readings:', error);
-        setError('Failed to fetch readings');
+        setError('Failed to fetch readings. Please try again later.');
+        setIsLoading(false);
       }
     );
 
@@ -43,18 +32,19 @@ export function useEnergyReadings() {
 
   const addReading = async (value: number) => {
     try {
-      const newReading = {
-        date: new Date().toLocaleDateString('en-GB'),
-        value: value,
-        timestamp: new Date()
-      };
-
-      await addDoc(collection(db, 'readings'), newReading);
+      const date = new Date();
+      const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+      
+      await addDoc(collection(db, 'readings'), {
+        date: formattedDate,
+        value,
+        timestamp: Timestamp.fromDate(date)
+      });
     } catch (err) {
-      setError('Failed to add reading');
       console.error('Error adding reading:', err);
+      setError('Failed to add reading. Please try again.');
     }
   };
 
-  return { readings, error, addReading };
+  return { readings, error, isLoading, addReading };
 }
