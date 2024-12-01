@@ -3,22 +3,13 @@
 import { useEnergyReadings } from "./energy/hooks/useEnergyReadings";
 import ConsumptionChart from "./energy/ConsumptionChart";
 import ReadingForm from "./energy/ReadingForm";
-import { ReadingsTable } from "./energy/ReadingsTable";
+import { EditableReadingsTable } from "./energy/EditableReadingsTable";
 import { ConsumptionStats } from "./energy/ConsumptionStats";
 import { processReadings } from "@/utils/processReadings";
 import { DAILY_SAFE, DAILY_MAX } from "./energy/constants";
 
 export default function EnergyTracker() {
-  const { readings, loading, error, addReading } = useEnergyReadings();
-
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto p-8 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-        <p className="mt-4">Loading readings...</p>
-      </div>
-    );
-  }
+  const { readings, error, addReading } = useEnergyReadings();
 
   if (error) {
     return (
@@ -33,7 +24,6 @@ export default function EnergyTracker() {
 
   const processedReadings = processReadings(readings);
   
-  // Calculate status for ConsumptionStats
   const getStatus = () => {
     if (processedReadings.length === 0) return 'success';
     const lastReading = processedReadings[processedReadings.length - 1];
@@ -53,7 +43,7 @@ export default function EnergyTracker() {
             status={getStatus()} 
           />
           <ConsumptionChart data={processedReadings} />
-          <ReadingsTable readings={processedReadings} />
+          <EditableReadingsTable readings={processedReadings} />
         </>
       ) : (
         <p className="text-center text-gray-500">No readings available. Add your first reading above.</p>

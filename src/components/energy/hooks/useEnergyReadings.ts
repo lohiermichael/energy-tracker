@@ -5,9 +5,12 @@ import { collection, query, orderBy, getDocs, addDoc, onSnapshot } from 'firebas
 import { db } from '@/lib/firebase';
 import { Reading } from '../../types';
 
+interface FirebaseReading extends Reading {
+  id: string;
+}
+
 export function useEnergyReadings() {
-  const [readings, setReadings] = useState<Reading[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [readings, setReadings] = useState<FirebaseReading[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,25 +21,23 @@ export function useEnergyReadings() {
 
     const unsubscribe = onSnapshot(readingsQuery, 
       (snapshot) => {
-        const fetchedReadings: Reading[] = [];
+        const fetchedReadings: FirebaseReading[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
           fetchedReadings.push({
+            id: doc.id,
             date: data.date,
             value: data.value,
           });
         });
         setReadings(fetchedReadings);
-        setLoading(false);
       },
       (error) => {
         console.error('Error fetching readings:', error);
         setError('Failed to fetch readings');
-        setLoading(false);
       }
     );
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
@@ -55,5 +56,5 @@ export function useEnergyReadings() {
     }
   };
 
-  return { readings, loading, error, addReading };
+  return { readings, error, addReading };
 }
