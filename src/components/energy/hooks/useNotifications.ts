@@ -1,10 +1,8 @@
-"use client";
-
 import { useState, useEffect } from 'react';
 import { DAILY_SAFE } from '../constants';
-import { Reading } from '../../types';
+import { ProcessedReading } from '../../types';
 
-export function useNotifications(readings: Reading[]) {
+export function useNotifications(readings: ProcessedReading[]) {
   const [notifications, setNotifications] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('energyNotifications');
@@ -22,7 +20,8 @@ export function useNotifications(readings: Reading[]) {
       if (lastReading.consumption > DAILY_SAFE) {
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('Energy Alert', {
-            body: `Daily consumption (${lastReading.consumption.toFixed(2)} kWh) above safe target (${DAILY_SAFE} kWh)`,
+            body: `Daily consumption (${lastReading.consumption.toFixed(2)} kWh) ` +
+                  `above safe target (${DAILY_SAFE} kWh)`,
           });
         }
       }

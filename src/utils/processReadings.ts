@@ -1,3 +1,5 @@
+import { ProcessedReading, Reading } from "@/components/types";
+
 export function processReadings(readings: Reading[]): ProcessedReading[] {
   return readings.map((reading, index) => ({
     ...reading,

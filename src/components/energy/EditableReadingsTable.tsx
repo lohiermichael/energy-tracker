@@ -73,7 +73,7 @@ export function EditableReadingsTable({ readings }: EditableReadingsTableProps) 
     setError(null);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent, reading: Reading, index: number) => {
+  const handleKeyPress = (e: React.KeyboardEvent, reading: ProcessedReading, index: number) => {
     if (e.key === "Enter") {
       handleSave(reading, index);
     } else if (e.key === "Escape") {
