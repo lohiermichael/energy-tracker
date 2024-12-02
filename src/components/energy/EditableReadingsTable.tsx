@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Reading } from "../types";
+import { ProcessedReading } from "../types";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Check, X, Pencil } from "lucide-react";
 
 interface EditableReadingsTableProps {
-  readings: Reading[];
+  readings: ProcessedReading[];
 }
 
 export function EditableReadingsTable({ readings }: EditableReadingsTableProps) {
@@ -20,7 +20,7 @@ export function EditableReadingsTable({ readings }: EditableReadingsTableProps) 
     setError(null);
   };
 
-  const handleSave = async (reading: Reading, index: number) => {
+  const handleSave = async (reading: ProcessedReading, index: number) => {
     try {
       if (!reading.id) {
         setError("Cannot update reading: missing ID");
