@@ -16,7 +16,23 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Energy Tracker",
-  description: "An application to track your energy consumption",
+  description: "Track your daily energy consumption and stay within limits",
+  openGraph: {
+    title: "Energy Tracker",
+    description: "Track your daily energy consumption and stay within limits",
+    type: "website",
+    images: "/opengraph-image.png"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Energy Tracker",
+    description: "Track your daily energy consumption and stay within limits",
+    images: "/opengraph-image.png"
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png"
+  }
 };
 
 export default function RootLayout({
