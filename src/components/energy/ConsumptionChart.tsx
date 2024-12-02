@@ -1,4 +1,5 @@
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
+  Legend, ResponsiveContainer, ReferenceLine, ReferenceArea } from 'recharts';
 import { DAILY_SAFE, DAILY_MAX, DAILY_EXTRA_CHARGE } from './constants';
 import { useState } from 'react';
 
@@ -8,6 +9,10 @@ interface ConsumptionChartProps {
     value: number;
     consumption: number;
   }>;
+}
+
+interface ChartEvent {
+  activeLabel?: string;
 }
 
 export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
@@ -24,26 +29,31 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
     meterReading: Number(reading.value.toFixed(2)),
     safeTarget: Number((data[0].value + (DAILY_SAFE * index)).toFixed(2)),
     maxTarget: Number((data[0].value + (DAILY_MAX * index)).toFixed(2)),
-    extraChargeTarget: Number((data[0].value + (DAILY_EXTRA_CHARGE * index)).toFixed(2)),
+    extraChargeTarget: Number(
+      (data[0].value + (DAILY_EXTRA_CHARGE * index)).toFixed(2)
+    ),
   }));
 
   const minConsumption = Math.min(...dailyData.map(d => d.consumption));
 
-  const handleBarMouseDown = (e: any) => {
+  const handleBarMouseDown = (e: ChartEvent) => {
     if (e) setBarLeft(e.activeLabel);
   };
 
-  const handleBarMouseMove = (e: any) => {
+  const handleBarMouseMove = (e: ChartEvent) => {
     if (barLeft && e) setBarRight(e.activeLabel);
   };
 
   const formatYAxis = (value: number) => value.toFixed(2);
-  const formatTooltip = (value: any) => {
+  const formatTooltip = (value: number | string) => {
     if (typeof value === 'number') {
-      return `${value.toFixed(2)}`;
+      return value.toFixed(2);
     }
     return value;
   };
+
+  // Rest of the component remains the same
+
 
   return (
     <div className="space-y-8">
