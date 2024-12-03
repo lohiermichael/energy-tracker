@@ -24,7 +24,7 @@ consumption better.
        style="vertical-align: middle; margin-right: 8px">
   <strong>View Live Website</strong>
 </a>
-
+<p>Deployed on <a href="https://vercel.com" target="_blank">▲ Vercel</a></p>
 
 ## Features
 
