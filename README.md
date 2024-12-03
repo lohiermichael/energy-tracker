@@ -24,7 +24,7 @@ consumption better.
        style="vertical-align: middle; margin-right: 8px">
   <strong>View Live Website</strong>
 </a>
-<p>Deployed on <a href="https://vercel.com" target="_blank">▲ Vercel</a></p>
+
 
 ## Features
 
@@ -36,12 +36,21 @@ consumption better.
 
 ## Tech Stack
 
-- Next.js 15.0
-- React 18.2
-- Firebase (Firestore)
-- Tailwind CSS
-- Recharts
-- TypeScript
+**Development:**
+[![Next.js](https://img.shields.io/badge/-Next.js%2015.0-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
+[![React](https://img.shields.io/badge/-React%2018.2-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org)
+[![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+
+**Styling & UI:**
+[![Tailwind CSS](https://img.shields.io/badge/-Tailwind%20CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Recharts](https://img.shields.io/badge/-Recharts-22B5BF?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0yIDJ2MjBoMjBWMkgyeiIvPjxwYXRoIGZpbGw9IiMyMkI1QkYiIGQ9Ik00IDRoMTZ2MTZINFY0em00IDhoOHY0SDh2LTR6Ii8+PC9zdmc+)](https://recharts.org)
+
+**Backend & Data:**
+[![Firebase](https://img.shields.io/badge/-Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
+
+**Deployment:**
+[![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+
 
 ## Getting Started
 
