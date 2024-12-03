@@ -19,6 +19,13 @@ monitor daily usage and get alerts before reaching limits. While built for my
 specific needs, this app can help anyone looking to manage their energy
 consumption better.
 
+<a href="https://energy-tracker-brown.vercel.app/" target="_blank">
+  <img src="public/globe.svg" alt="Website Globe" width="20" height="20" 
+       style="vertical-align: middle; margin-right: 8px">
+  <strong>View Live Website</strong>
+</a>
+
+
 ## Features
 
 - 📊 Consumption visualization with interactive charts
