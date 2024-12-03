@@ -1,7 +1,6 @@
-
 <div align="center">
 
-# Energy Tracker
+# <img src="public/logo.svg" alt="Energy Tracker Logo" width="32" height="32"> Energy Tracker
 
 <img
   src="public/website-preview.png"
