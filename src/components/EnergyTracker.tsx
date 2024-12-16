@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useEnergyReadings } from "@/components/energy/hooks/useEnergyReadings";
 import ConsumptionChart from "@/components/energy/ConsumptionChart";
 import ReadingForm from "@/components/energy/ReadingForm";
@@ -16,7 +16,7 @@ export default function EnergyTracker() {
   const { readings, error, isLoading, addReading } = useEnergyReadings();
   const [filteredReadings, setFilteredReadings] = useState<ProcessedReading[]>([]);
   
-  const processedReadings = processReadings(readings);
+  const processedReadings = useMemo(() => processReadings(readings), [readings]);
 
   // Get current period
   const getCurrentPeriodKey = () => {
@@ -57,21 +57,25 @@ export default function EnergyTracker() {
     return uniquePeriods;
   }, [processedReadings]);
 
+  // Update filtered readings when periods or active period changes
+  useEffect(() => {
+    const periodReadings = periods.get(activePeriod) || [];
+    setFilteredReadings(periodReadings);
+  }, [periods, activePeriod]);
+
   const handlePeriodChange = (period: string) => {
     setActivePeriod(period);
-    const periodReadings = periods.get(period) || [];
-    setFilteredReadings(periodReadings);
   };
   
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto p-8">
         <div className="flex items-center justify-center space-x-2">
-          <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
-          <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-150">
-          </div>
-          <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-300">
-          </div>
+          <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse" />
+          <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse 
+            delay-150" />
+          <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse 
+            delay-300" />
           <span className="text-gray-600 ml-2">Loading energy data...</span>
         </div>
       </div>
