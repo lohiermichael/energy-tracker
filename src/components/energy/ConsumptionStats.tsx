@@ -5,36 +5,56 @@ import {
   Target, 
   Zap
 } from 'lucide-react';
-import { Reading } from '../types';
-import { MONTHLY_LIMIT } from './constants';
+import { ProcessedReading } from '../types';
+import { MONTHLY_LIMIT, DAILY_SAFE } from './constants';
 
 interface ConsumptionStatsProps {
-  readings: Reading[];
+  readings: ProcessedReading[];  // Changed from Reading[] to ProcessedReading[]
   status: 'alert' | 'warning' | 'success';
 }
 
 const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
+  const isNewPeriod = readings.length === 1;
+
   const getTotalConsumption = () => {
-    return readings.slice(1).reduce((sum, reading, index) => {
-      const consumption = reading.value - readings[index].value;
-      return sum + consumption;
+    if (isNewPeriod) {
+      // For first reading, use its consumption value
+      return readings[0].consumption;
+    }
+
+    // Otherwise calculate normally for multiple readings
+    return readings.slice(1).reduce((sum, reading) => {
+      return sum + reading.consumption;
     }, 0);
   };
 
   const getAverageDailyConsumption = () => {
+    if (isNewPeriod) {
+      // For first reading, use its consumption as the average
+      return readings[0].consumption.toFixed(2);
+    }
+    
     const total = getTotalConsumption();
-    const days = readings.length - 1;
-    return days > 0 ? (total / days).toFixed(2) : '0';
+    const days = Math.max(1, readings.length - 1);
+    return (total / days).toFixed(2);
   };
 
   const getDaysRemaining = () => {
     if (readings.length === 0) return 0;
-    const startDate = new Date(readings[0].date.split('/').reverse().join('-'));
-    const lastDate = new Date(startDate);
-    lastDate.setDate(startDate.getDate() + 30);
+
+    const [day, month, year] = readings[0].date.split('/').map(Number);
     const currentDate = new Date();
+    const periodEndDate = new Date(year, month - 1, 15);
+    
+    // If we're in the first half of the month, end date is the 15th
+    // If we're in the second half, end date is the 15th of next month
+    if (day >= 16) {
+      periodEndDate.setMonth(periodEndDate.getMonth() + 1);
+    }
+
     const remaining = Math.ceil(
-      (lastDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+      (periodEndDate.getTime() - currentDate.getTime()) / 
+      (1000 * 60 * 60 * 24)
     );
     return Math.max(0, remaining);
   };
@@ -42,7 +62,16 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
   const getRemainingDaily = () => {
     const daysLeft = getDaysRemaining();
     if (daysLeft <= 0) return '0.00';
-    const remaining = MONTHLY_LIMIT - getTotalConsumption();
+    
+    const totalUsed = getTotalConsumption();
+    const remaining = MONTHLY_LIMIT - totalUsed;
+    
+    // If this is first reading and its consumption is high,
+    // suggest adjusting based on daily safe limit
+    if (isNewPeriod && readings[0].consumption > DAILY_SAFE) {
+      return DAILY_SAFE.toFixed(2);
+    }
+    
     return (remaining / daysLeft).toFixed(2);
   };
 
@@ -56,6 +85,7 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
     return `${Math.min(percentage, 100)}%`;
   };
 
+  // Rest of the component remains the same...
   return (
     <div className={`p-6 rounded-lg ${
       status === 'alert' ? 'bg-red-100' :
@@ -151,6 +181,5 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
     </div>
   );
 };
-
 
 export default ConsumptionStats;
