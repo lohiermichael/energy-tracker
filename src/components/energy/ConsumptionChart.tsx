@@ -28,7 +28,8 @@ interface ChartEvent {
 
 export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
   const [barLeft, setBarLeft] = useState<string | undefined>();
-  const [_, setBarRight] = useState<string | undefined>();
+  // Remove unused state variable and keep only setBarRight
+  const setBarRight = useState<string | undefined>()[1];
 
   // For the daily chart, we can use consumption directly
   const dailyData = data.map(reading => ({
