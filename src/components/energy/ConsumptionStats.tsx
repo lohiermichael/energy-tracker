@@ -13,7 +13,7 @@ interface ConsumptionStatsProps {
   status: 'alert' | 'warning' | 'success';
 }
 
-export const  ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
+export const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
   const getTotalConsumption = () => {
     return readings.slice(1).reduce((sum, reading, index) => {
       const consumption = reading.value - readings[index].value;
@@ -48,7 +48,12 @@ export const  ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) =
 
   const getProgressPercentage = () => {
     const total = getTotalConsumption();
-    return Math.min((total / MONTHLY_LIMIT) * 100, 100);
+    return (total / MONTHLY_LIMIT) * 100;
+  };
+
+  const getProgressBarWidth = () => {
+    const percentage = getProgressPercentage();
+    return `${Math.min(percentage, 100)}%`;
   };
 
   return (
@@ -135,7 +140,7 @@ export const  ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) =
                 status === 'warning' ? 'bg-yellow-500' :
                 'bg-green-500'
               }`}
-              style={{ width: `${getProgressPercentage()}%` }}
+              style={{ width: getProgressBarWidth() }}
             />
           </div>
           <p className="text-sm text-gray-600 mt-2 text-center">
