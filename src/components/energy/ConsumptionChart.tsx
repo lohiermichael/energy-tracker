@@ -73,23 +73,17 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
   const generateCumulativeData = () => {
     if (data.length === 0) return [];
 
-    const firstReading = data[0];
-    const baseValue = firstReading.value;
-    const allDates = data.map(r => r.date);
+    // Find the last reading from the previous period
+    const previousValue = data[0].value - data[0].consumption;
 
-    return allDates.map((date, index) => {
-      const actualReading = data.find(r => r.date === date)?.value || baseValue;
-
-      return {
-        date,
-        meterReading: Number(actualReading.toFixed(2)),
-        safeTarget: Number((baseValue + (DAILY_SAFE * index)).toFixed(2)),
-        maxTarget: Number((baseValue + (DAILY_MAX * index)).toFixed(2)),
-        extraChargeTarget: Number(
-          (baseValue + (DAILY_EXTRA_CHARGE * index)).toFixed(2)
-        ),
-      };
-    });
+    // Calculate targets based on previous value + daily targets
+    return data.map(reading => ({
+      date: reading.date,
+      meterReading: Number(reading.value.toFixed(2)),
+      safeTarget: Number((previousValue + DAILY_SAFE).toFixed(2)),
+      maxTarget: Number((previousValue + DAILY_MAX).toFixed(2)),
+      extraChargeTarget: Number((previousValue + DAILY_EXTRA_CHARGE).toFixed(2)),
+    }));
   };
 
   const cumulativeData = generateCumulativeData();
