@@ -9,7 +9,8 @@ import {
   Tooltip, 
   Legend, 
   ResponsiveContainer, 
-  ReferenceLine 
+  ReferenceLine,
+  TooltipProps
 } from 'recharts';
 import { DAILY_SAFE, DAILY_MAX, DAILY_EXTRA_CHARGE } from './constants';
 import { useState } from 'react';
@@ -26,10 +27,7 @@ interface ChartEvent {
   activeLabel?: string;
 }
 
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
+interface CustomTooltipProps extends TooltipProps<number, string> {
   type?: 'daily' | 'cumulative';
 }
 
@@ -39,7 +37,7 @@ const CustomTooltip = ({ active, payload, label, type }: CustomTooltipProps) => 
   return (
     <div className="bg-white p-3 border rounded shadow-lg space-y-1">
       <p className="font-medium">{label}</p>
-      {payload.map((entry: any, index: number) => (
+      {payload.map((entry, index) => (
         <p key={index} style={{ color: entry.color }}>
           {entry.name}: {Number(entry.value).toFixed(2)} kWh
         </p>
@@ -61,16 +59,29 @@ const CustomTooltip = ({ active, payload, label, type }: CustomTooltipProps) => 
   );
 };
 
+interface DailyData {
+  date: string;
+  consumption: number;
+}
+
+interface CumulativeData {
+  date: string;
+  meterReading: number;
+  safeTarget: number;
+  maxTarget: number;
+  extraChargeTarget: number;
+}
+
 export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
   const [barLeft, setBarLeft] = useState<string | undefined>();
   const setBarRight = useState<string | undefined>()[1];
 
-  const dailyData = data.map(reading => ({
+  const dailyData: DailyData[] = data.map(reading => ({
     date: reading.date,
     consumption: reading.consumption,
   }));
 
-  const generateCumulativeData = () => {
+  const generateCumulativeData = (): CumulativeData[] => {
     if (data.length === 0) return [];
 
     // Find the last reading from the previous period
@@ -139,7 +150,8 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
               <XAxis dataKey="date" />
               <YAxis domain={getConsumptionDomain()} tickFormatter={formatYAxis} />
               <Tooltip 
-                content={props => <CustomTooltip {...props} type="daily" />}
+                content={(props: CustomTooltipProps) => 
+                  <CustomTooltip {...props} type="daily" />}
               />
               <Legend />
               <Bar dataKey="consumption" fill="#2563eb" name="Daily Usage" />
@@ -169,8 +181,8 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis domain={getCumulativeDomain()} tickFormatter={formatYAxis} />
-              <Tooltip 
-                content={props => <CustomTooltip {...props} type="cumulative" />}
+              <Tooltip<number, string>
+                content={(props) => <CustomTooltip {...props} type="cumulative" />}
               />
               <Legend />
               <Line
