@@ -26,40 +26,65 @@ interface ChartEvent {
   activeLabel?: string;
 }
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  type?: 'daily' | 'cumulative';
+}
+
+const CustomTooltip = ({ active, payload, label, type }: CustomTooltipProps) => {
+  if (!active || !payload) return null;
+
+  return (
+    <div className="bg-white p-3 border rounded shadow-lg space-y-1">
+      <p className="font-medium">{label}</p>
+      {payload.map((entry: any, index: number) => (
+        <p key={index} style={{ color: entry.color }}>
+          {entry.name}: {Number(entry.value).toFixed(2)} kWh
+        </p>
+      ))}
+      {type === 'daily' && (
+        <>
+          <p style={{ color: 'green' }}>
+            Safe Target: {DAILY_SAFE.toFixed(2)} kWh
+          </p>
+          <p style={{ color: 'purple' }}>
+            Max Target: {DAILY_MAX.toFixed(2)} kWh
+          </p>
+          <p style={{ color: 'red' }}>
+            Extra Charge Target: {DAILY_EXTRA_CHARGE.toFixed(2)} kWh
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
 export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
   const [barLeft, setBarLeft] = useState<string | undefined>();
-  // Remove unused state variable and keep only setBarRight
   const setBarRight = useState<string | undefined>()[1];
 
-  // For the daily chart, we can use consumption directly
   const dailyData = data.map(reading => ({
     date: reading.date,
     consumption: reading.consumption,
   }));
 
-  // For cumulative chart, we need to calculate targets based on first reading
   const generateCumulativeData = () => {
     if (data.length === 0) return [];
 
     const firstReading = data[0];
     const baseValue = firstReading.value;
-
-    // Create dates array starting from the first reading
     const allDates = data.map(r => r.date);
 
     return allDates.map((date, index) => {
-      const actualReading = data.find(r => r.date === date)?.value || 
-        baseValue;
+      const actualReading = data.find(r => r.date === date)?.value || baseValue;
 
       return {
         date,
         meterReading: Number(actualReading.toFixed(2)),
-        safeTarget: Number(
-          (baseValue + (DAILY_SAFE * index)).toFixed(2)
-        ),
-        maxTarget: Number(
-          (baseValue + (DAILY_MAX * index)).toFixed(2)
-        ),
+        safeTarget: Number((baseValue + (DAILY_SAFE * index)).toFixed(2)),
+        maxTarget: Number((baseValue + (DAILY_MAX * index)).toFixed(2)),
         extraChargeTarget: Number(
           (baseValue + (DAILY_EXTRA_CHARGE * index)).toFixed(2)
         ),
@@ -69,23 +94,15 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
 
   const cumulativeData = generateCumulativeData();
 
-  // Calculate appropriate domain for consumption chart
   const getConsumptionDomain = () => {
     const maxConsumption = Math.max(
       ...dailyData.map(d => d.consumption),
       DAILY_EXTRA_CHARGE
     );
-    const minConsumption = Math.min(
-      ...dailyData.map(d => d.consumption),
-      0
-    );
-    return [
-      Math.floor(minConsumption - 0.5), 
-      Math.ceil(maxConsumption + 0.5)
-    ];
+    const minConsumption = Math.min(...dailyData.map(d => d.consumption), 0);
+    return [Math.floor(minConsumption - 0.5), Math.ceil(maxConsumption + 0.5)];
   };
 
-  // Calculate appropriate domain for cumulative chart
   const getCumulativeDomain = () => {
     if (cumulativeData.length === 0) return [0, 100];
     
@@ -103,13 +120,13 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
     return [min - padding, max + padding];
   };
 
+  const referenceLines = [
+    { y: DAILY_SAFE, stroke: "green", label: "Safe Limit" },
+    { y: DAILY_MAX, stroke: "purple", label: "Max Limit" },
+    { y: DAILY_EXTRA_CHARGE, stroke: "red", label: "Extra Charge Limit" }
+  ];
+
   const formatYAxis = (value: number) => value.toFixed(2);
-  const formatTooltip = (value: number | string) => {
-    if (typeof value === 'number') {
-      return value.toFixed(2);
-    }
-    return value;
-  };
 
   return (
     <div className="space-y-8">
@@ -126,47 +143,25 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis 
-                domain={getConsumptionDomain()}
-                tickFormatter={formatYAxis}
+              <YAxis domain={getConsumptionDomain()} tickFormatter={formatYAxis} />
+              <Tooltip 
+                content={props => <CustomTooltip {...props} type="daily" />}
               />
-              <Tooltip formatter={formatTooltip} />
               <Legend />
-              <Bar 
-                dataKey="consumption" 
-                fill="#2563eb" 
-                name="Daily Usage"
-              />
-              <ReferenceLine
-                y={DAILY_SAFE}
-                stroke="green"
-                strokeDasharray="3 3"
-                label={{ 
-                  value: 'Safe Limit', 
-                  fill: 'green', 
-                  position: 'right' 
-                }}
-              />
-              <ReferenceLine
-                y={DAILY_MAX}
-                stroke="purple"
-                strokeDasharray="3 3"
-                label={{ 
-                  value: 'Max Limit', 
-                  fill: 'purple', 
-                  position: 'right' 
-                }}
-              />
-              <ReferenceLine
-                y={DAILY_EXTRA_CHARGE}
-                stroke="red"
-                strokeDasharray="3 3"
-                label={{ 
-                  value: 'Extra Charge Limit', 
-                  fill: 'red', 
-                  position: 'right' 
-                }}
-              />
+              <Bar dataKey="consumption" fill="#2563eb" name="Daily Usage" />
+              {referenceLines.map((line, index) => (
+                <ReferenceLine
+                  key={index}
+                  y={line.y}
+                  stroke={line.stroke}
+                  strokeDasharray="3 3"
+                  label={{ 
+                    value: line.label, 
+                    fill: line.stroke, 
+                    position: 'right' 
+                  }}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -179,11 +174,10 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
             <LineChart data={cumulativeData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis 
-                domain={getCumulativeDomain()}
-                tickFormatter={formatYAxis}
+              <YAxis domain={getCumulativeDomain()} tickFormatter={formatYAxis} />
+              <Tooltip 
+                content={props => <CustomTooltip {...props} type="cumulative" />}
               />
-              <Tooltip formatter={formatTooltip} />
               <Legend />
               <Line
                 type="monotone"
