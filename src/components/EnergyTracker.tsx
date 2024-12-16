@@ -118,7 +118,10 @@ export default function EnergyTracker() {
                 readings={filteredReadings} 
                 status={getStatus()} 
               />
-              <ConsumptionEstimation readings={filteredReadings} />
+              <ConsumptionEstimation 
+                currentReadings={filteredReadings}
+                allReadings={processedReadings} 
+              />
               <ConsumptionChart data={filteredReadings} />
               <EditableReadingsTable readings={filteredReadings} />
             </>

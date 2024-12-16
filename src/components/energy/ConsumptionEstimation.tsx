@@ -3,29 +3,54 @@ import { AlertTriangle, TrendingUp } from 'lucide-react';
 import { ProcessedReading } from '../types';
 
 interface ConsumptionEstimationProps {
-  readings: ProcessedReading[];
+  currentReadings: ProcessedReading[];
+  allReadings: ProcessedReading[];
 }
 
-const ConsumptionEstimation = ({ readings }: ConsumptionEstimationProps) => {
-  if (readings.length < 2) return null;
+const ConsumptionEstimation = ({ 
+  currentReadings, 
+  allReadings 
+}: ConsumptionEstimationProps) => {
+  if (currentReadings.length === 0 || allReadings.length === 0) return null;
 
-  const getTotalDays = () => {
-    const firstDate = new Date(readings[0].date.split('/').reverse().join('-'));
-    const lastDate = new Date(
-      readings[readings.length - 1].date.split('/').reverse().join('-')
-    );
-    return Math.ceil((lastDate.getTime() - firstDate.getTime()) 
-      / (1000 * 60 * 60 * 24));
+  // Calculate days since first ever reading
+  const getTotalHistoricalDays = () => {
+    const firstReading = allReadings[0];
+    const lastReading = allReadings[allReadings.length - 1];
+    
+    const firstDate = new Date(firstReading.date.split('/').reverse().join('-'));
+    const lastDate = new Date(lastReading.date.split('/').reverse().join('-'));
+    
+    return Math.max(1, Math.ceil(
+      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
+    ));
   };
 
   const calculateProjection = () => {
-    const totalConsumption = readings.slice(1).reduce(
-      (sum, reading) => sum + reading.consumption, 
+    const daysInPeriod = 30;
+    
+    // Calculate total historical consumption
+    const totalHistoricalConsumption = allReadings.reduce(
+      (sum, reading) => sum + (reading.consumption || 0),
       0
     );
-    const days = getTotalDays();
-    const avgDaily = totalConsumption / days;
-    const projectedMonthly = avgDaily * 30;
+    
+    // Calculate average based on all historical data
+    const totalDays = getTotalHistoricalDays();
+    const avgDaily = totalHistoricalConsumption / totalDays;
+
+    // Current period consumption from filtered readings
+    const currentPeriodConsumption = currentReadings.reduce(
+      (sum, reading) => sum + (reading.consumption || 0),
+      0
+    );
+    
+    // Calculate remaining days in current period
+    const daysElapsed = currentReadings.length;
+    const remainingDays = daysInPeriod - daysElapsed;
+    const estimatedRemaining = avgDaily * remainingDays;
+    
+    const projectedMonthly = currentPeriodConsumption + estimatedRemaining;
     
     // Calculate excess over 200 kWh
     const excess = Math.max(0, projectedMonthly - 200);
@@ -35,6 +60,8 @@ const ConsumptionEstimation = ({ readings }: ConsumptionEstimationProps) => {
     return {
       avgDaily,
       projectedMonthly,
+      remainingDays,
+      estimatedRemaining,
       excess,
       extraFee
     };
@@ -67,6 +94,18 @@ const ConsumptionEstimation = ({ readings }: ConsumptionEstimationProps) => {
           <p className="text-sm text-gray-600">Projected Monthly Usage</p>
           <p className={`text-xl font-semibold ${getStatusColor()}`}>
             {projection.projectedMonthly.toFixed(2)} kWh
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-600">Days Remaining in Period</p>
+          <p className="text-xl font-semibold">{projection.remainingDays}</p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-600">Estimated Remaining Usage</p>
+          <p className="text-xl font-semibold">
+            {projection.estimatedRemaining.toFixed(2)} kWh
           </p>
         </div>
       </div>
