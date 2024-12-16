@@ -6,6 +6,7 @@ import ConsumptionChart from "@/components/energy/ConsumptionChart";
 import ReadingForm from "@/components/energy/ReadingForm";
 import { EditableReadingsTable } from "@/components/energy/EditableReadingsTable";
 import ConsumptionStats from "@/components/energy/ConsumptionStats";
+import ConsumptionEstimation from "@/components/energy/ConsumptionEstimation";
 import MonthlyTabs from "@/components/energy/MonthlyTabs";
 import { processReadings } from "@/utils/processReadings";
 import { DAILY_SAFE, DAILY_MAX } from "@/components/energy/constants";
@@ -117,6 +118,7 @@ export default function EnergyTracker() {
                 readings={filteredReadings} 
                 status={getStatus()} 
               />
+              <ConsumptionEstimation readings={filteredReadings} />
               <ConsumptionChart data={filteredReadings} />
               <EditableReadingsTable readings={filteredReadings} />
             </>
