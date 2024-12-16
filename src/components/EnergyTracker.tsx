@@ -5,7 +5,7 @@ import { useEnergyReadings } from "@/components/energy/hooks/useEnergyReadings";
 import ConsumptionChart from "@/components/energy/ConsumptionChart";
 import ReadingForm from "@/components/energy/ReadingForm";
 import { EditableReadingsTable } from "@/components/energy/EditableReadingsTable";
-import { ConsumptionStats } from "@/components/energy/ConsumptionStats";
+import ConsumptionStats from "@/components/energy/ConsumptionStats";
 import MonthlyTabs from "@/components/energy/MonthlyTabs";
 import { processReadings } from "@/utils/processReadings";
 import { DAILY_SAFE, DAILY_MAX } from "@/components/energy/constants";

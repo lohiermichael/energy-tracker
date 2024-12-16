@@ -13,7 +13,7 @@ interface ConsumptionStatsProps {
   status: 'alert' | 'warning' | 'success';
 }
 
-export const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
+const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
   const getTotalConsumption = () => {
     return readings.slice(1).reduce((sum, reading, index) => {
       const consumption = reading.value - readings[index].value;
@@ -151,3 +151,6 @@ export const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) =>
     </div>
   );
 };
+
+
+export default ConsumptionStats;
