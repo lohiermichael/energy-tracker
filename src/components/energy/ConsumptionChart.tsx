@@ -87,14 +87,23 @@ export default function ConsumptionCharts({ data }: ConsumptionChartProps) {
     // Find the last reading from the previous period
     const previousValue = data[0].value - data[0].consumption;
 
-    // Calculate targets based on previous value + daily targets
-    return data.map(reading => ({
-      date: reading.date,
-      meterReading: Number(reading.value.toFixed(2)),
-      safeTarget: Number((previousValue + DAILY_SAFE).toFixed(2)),
-      maxTarget: Number((previousValue + DAILY_MAX).toFixed(2)),
-      extraChargeTarget: Number((previousValue + DAILY_EXTRA_CHARGE).toFixed(2)),
-    }));
+    // Calculate targets based on previous value + accumulating daily targets
+    return data.map((reading, index) => {
+      const daysFromStart = index + 1;
+      return {
+        date: reading.date,
+        meterReading: Number(reading.value.toFixed(2)),
+        safeTarget: Number(
+          (previousValue + DAILY_SAFE * daysFromStart).toFixed(2)
+        ),
+        maxTarget: Number(
+          (previousValue + DAILY_MAX * daysFromStart).toFixed(2)
+        ),
+        extraChargeTarget: Number(
+          (previousValue + DAILY_EXTRA_CHARGE * daysFromStart).toFixed(2)
+        ),
+      };
+    });
   };
 
   const cumulativeData = generateCumulativeData();
