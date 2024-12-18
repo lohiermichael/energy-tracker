@@ -16,46 +16,40 @@ interface ConsumptionStatsProps {
 const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
 
   const getTotalConsumption = () => {
-    if (readings.length <= 1) return 0;
+    if (readings.length === 0) return 0;
     
-    // Sum all consumptions except the first reading 
-    // (which is the last reading from previous period)
-    return readings.slice(1).reduce((sum, reading) => {
+    // Sum all consumptions
+    return readings.reduce((sum, reading) => {
       return sum + reading.consumption;
     }, 0);
   };
 
   const getAverageDailyConsumption = () => {
     const total = getTotalConsumption();
-    // Subtract 1 from the length because first reading is from previous period
-    const days = Math.max(1, readings.length - 1);
-    return (total / days).toFixed(2);
+    // Use total number of readings as the number of days
+    const days = readings.length;
+    return days > 0 ? (total / days).toFixed(2) : '0.00';
   };
 
   const getDaysRemaining = () => {
     if (readings.length === 0) return 0;
 
-    const now = new Date();
-    const currentDay = now.getDate();
-    const currentMonth = now.getMonth(); // 0-based
-    const currentYear = now.getFullYear();
-
-    // Determine period end date
-    const endDate = new Date();
+    // Get the first reading's date to determine which period we're viewing
+    const firstReading = readings[0];
+    const [day, month, year] = firstReading.date.split('/').map(Number);
     
-    if (currentDay < 16) {
-      // If we're before the 15th, period ends on the 15th of current month
-      endDate.setFullYear(currentYear, currentMonth, 15);
-    } else {
-      // If we're after the 15th, period ends on the 15th of next month
-      endDate.setFullYear(currentYear, currentMonth + 1, 15);
+    // If it's a past period, return 0
+    const now = new Date();
+    const periodDate = new Date(year, month - 1, day);
+    if (periodDate.getMonth() < now.getMonth() || 
+        periodDate.getFullYear() < now.getFullYear()) {
+      return 0;
     }
 
-    const remaining = Math.ceil(
-      (endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    
-    return Math.max(0, remaining);
+    // For current period, calculate remaining days until next billing cycle
+    const daysInPeriod = 30;
+    const daysElapsed = readings.length;
+    return Math.max(0, daysInPeriod - daysElapsed);
   };
 
   const getRemainingDaily = () => {

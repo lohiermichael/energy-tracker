@@ -58,26 +58,35 @@ export default function EnergyTracker() {
     return uniquePeriods;
   }, [processedReadings]);
 
-  // Update filtered readings when periods or active period changes
+  // Inside useEffect in EnergyTracker.tsx
   useEffect(() => {
     const periodReadings = periods.get(activePeriod) || [];
 
-    // Find the last reading from previous period if it exists
     if (periodReadings.length > 0) {
+      // We still need to find the last reading from previous period for calculations
       const [day, month, year] = periodReadings[0].date.split('/').map(Number);
       const firstReadingDate = new Date(year, month - 1, day);
       
-      // Find the last reading before this period's first reading
-      const previousReading = processedReadings.find(reading => {
-        const [d, m, y] = reading.date.split('/').map(Number);
-        const readingDate = new Date(y, m - 1, d);
-        return readingDate < firstReadingDate;
-      });
+      const lastPreviousReading = [...processedReadings]
+        .reverse()
+        .find(reading => {
+          const [d, m, y] = reading.date.split('/').map(Number);
+          const readingDate = new Date(y, m - 1, d);
+          return readingDate < firstReadingDate;
+        });
       
-      if (previousReading) {
+      if (lastPreviousReading) {
+        // Calculate consumption for the first reading of the period
+        const firstPeriodReading = {
+          ...periodReadings[0],
+          consumption: periodReadings[0].value - lastPreviousReading.value
+        };
+
+        // Set filtered readings with the recalculated first reading
+        // but without showing the previous period reading
         setFilteredReadings([
-          { ...previousReading, consumption: 0 },
-          ...periodReadings
+          firstPeriodReading,
+          ...periodReadings.slice(1)
         ]);
       } else {
         setFilteredReadings(periodReadings);
