@@ -11,6 +11,7 @@ import MonthlyTabs from "@/components/energy/MonthlyTabs";
 import { processReadings } from "@/utils/processReadings";
 import { DAILY_SAFE, DAILY_MAX } from "@/components/energy/constants";
 import type { ProcessedReading } from "@/components/types";
+import EnergyHeader from "@/components/energy/EnergyHeader";
 
 export default function EnergyTracker() {
   const { readings, error, isLoading, addReading } = useEnergyReadings();
@@ -133,7 +134,7 @@ export default function EnergyTracker() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4">
-      <h1 className="text-3xl font-bold">Energy Consumption Tracker</h1>
+      <EnergyHeader />
       <ReadingForm onSubmit={addReading} />
       {processedReadings.length > 0 ? (
         <>
