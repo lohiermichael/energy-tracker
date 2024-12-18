@@ -75,8 +75,6 @@ export default function EnergyTracker() {
       });
       
       if (previousReading) {
-        // Include the previous reading at the start, but marked with 
-        // consumption = 0 since it's from previous period
         setFilteredReadings([
           { ...previousReading, consumption: 0 },
           ...periodReadings
@@ -87,8 +85,7 @@ export default function EnergyTracker() {
     } else {
       setFilteredReadings([]);
     }
-
-  }, [periods, activePeriod]);
+  }, [periods, activePeriod, processedReadings]);
 
   const handlePeriodChange = (period: string) => {
     setActivePeriod(period);

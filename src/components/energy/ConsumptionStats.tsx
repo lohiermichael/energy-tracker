@@ -6,7 +6,7 @@ import {
   Zap
 } from 'lucide-react';
 import { ProcessedReading } from '../types';
-import { MONTHLY_LIMIT, DAILY_SAFE } from './constants';
+import { MONTHLY_LIMIT } from './constants';
 
 interface ConsumptionStatsProps {
   readings: ProcessedReading[];  // Changed from Reading[] to ProcessedReading[]
@@ -14,7 +14,6 @@ interface ConsumptionStatsProps {
 }
 
 const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
-  const isNewPeriod = readings.length === 1;
 
   const getTotalConsumption = () => {
     if (readings.length <= 1) return 0;
@@ -42,7 +41,7 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
     const currentYear = now.getFullYear();
 
     // Determine period end date
-    let endDate = new Date();
+    const endDate = new Date();
     
     if (currentDay < 16) {
       // If we're before the 15th, period ends on the 15th of current month

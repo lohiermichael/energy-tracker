@@ -11,6 +11,7 @@ import {
   TooltipProps
 } from 'recharts';
 import { DAILY_SAFE, DAILY_MAX, DAILY_EXTRA_CHARGE } from './constants';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 interface CumulativeData {
   date: string;
@@ -20,9 +21,11 @@ interface CumulativeData {
   extraChargeTarget: number;
 }
 
-interface CustomTooltipProps extends TooltipProps<number, string> {}
-
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
+  active,
+  payload,
+  label
+}) => {
   if (!active || !payload) return null;
 
   return (

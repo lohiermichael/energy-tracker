@@ -1,5 +1,5 @@
-import DailyConsumptionChart from '@/components/energy/dailyConSumptionChart';
 import CumulativeMeterChart from '@/components/energy/CumulativeMeterChart';
+import DailyConsumptionChart from '@/components/energy/DailyConSumptionChart';
 
 interface ConsumptionChartProps {
   data: Array<{

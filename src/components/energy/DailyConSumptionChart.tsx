@@ -12,10 +12,13 @@ import {
   TooltipProps
 } from 'recharts';
 import { DAILY_SAFE, DAILY_MAX, DAILY_EXTRA_CHARGE } from './constants';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
-interface CustomTooltipProps extends TooltipProps<number, string> {}
-
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+const CustomTooltip: React.FC<TooltipProps<ValueType, NameType>> = ({
+  active,
+  payload,
+  label
+}) => {
   if (!active || !payload) return null;
 
   return (
@@ -46,7 +49,9 @@ interface DailyConsumptionChartProps {
   }>;
 }
 
-export default function DailyConsumptionChart({ data }: DailyConsumptionChartProps) {
+export default function DailyConsumptionChart({ 
+  data 
+}: DailyConsumptionChartProps) {
   const getConsumptionDomain = () => {
     const maxConsumption = Math.max(
       ...data.map(d => d.consumption),
