@@ -36,20 +36,26 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
   const getDaysRemaining = () => {
     if (readings.length === 0) return 0;
 
-    const [day, month, year] = readings[0].date.split('/').map(Number);
-    const currentDate = new Date();
-    const periodEndDate = new Date(year, month - 1, 15);
+    const now = new Date();
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth(); // 0-based
+    const currentYear = now.getFullYear();
+
+    // Determine period end date
+    let endDate = new Date();
     
-    // If we're in the first half of the month, end date is the 15th
-    // If we're in the second half, end date is the 15th of next month
-    if (day >= 16) {
-      periodEndDate.setMonth(periodEndDate.getMonth() + 1);
+    if (currentDay < 16) {
+      // If we're before the 15th, period ends on the 15th of current month
+      endDate.setFullYear(currentYear, currentMonth, 15);
+    } else {
+      // If we're after the 15th, period ends on the 15th of next month
+      endDate.setFullYear(currentYear, currentMonth + 1, 15);
     }
 
     const remaining = Math.ceil(
-      (periodEndDate.getTime() - currentDate.getTime()) / 
-      (1000 * 60 * 60 * 24)
+      (endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
     );
+    
     return Math.max(0, remaining);
   };
 
@@ -57,16 +63,19 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
     const daysLeft = getDaysRemaining();
     if (daysLeft <= 0) return '0.00';
     
+    // Calculate total consumption so far
     const totalUsed = getTotalConsumption();
-    const remaining = MONTHLY_LIMIT - totalUsed;
     
-    // If this is first reading and its consumption is high,
-    // suggest adjusting based on daily safe limit
-    if (isNewPeriod && readings[0].consumption > DAILY_SAFE) {
-      return DAILY_SAFE.toFixed(2);
-    }
+    // How many kWh remaining until 200 kWh
+    const remainingUntilLimit = 200 - totalUsed;
     
-    return (remaining / daysLeft).toFixed(2);
+    // If we've already exceeded 200 kWh, return 0
+    if (remainingUntilLimit <= 0) return '0.00';
+    
+    // Calculate how much we can use per day to reach exactly 200 kWh
+    const dailyTarget = remainingUntilLimit / daysLeft;
+    
+    return dailyTarget.toFixed(2);
   };
 
   const getProgressPercentage = () => {
