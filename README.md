@@ -3,16 +3,10 @@
 # <img src="public/logo.svg" alt="Energy Tracker Logo" width="32" height="32"> Energy Tracker
 
 <img
-  src="public/website-preview-1.png"
+  src="public/website-preview.png"
   alt="Website Preview"
   width="800"
   style="max-width: 100%;">
-<img
-  src="public/website-preview-2.png"
-  alt="Website Preview"
-  width="800"
-  style="max-width: 100%;">
-
 
 </div>
 
