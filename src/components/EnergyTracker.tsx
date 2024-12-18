@@ -60,7 +60,33 @@ export default function EnergyTracker() {
   // Update filtered readings when periods or active period changes
   useEffect(() => {
     const periodReadings = periods.get(activePeriod) || [];
-    setFilteredReadings(periodReadings);
+
+    // Find the last reading from previous period if it exists
+    if (periodReadings.length > 0) {
+      const [day, month, year] = periodReadings[0].date.split('/').map(Number);
+      const firstReadingDate = new Date(year, month - 1, day);
+      
+      // Find the last reading before this period's first reading
+      const previousReading = processedReadings.find(reading => {
+        const [d, m, y] = reading.date.split('/').map(Number);
+        const readingDate = new Date(y, m - 1, d);
+        return readingDate < firstReadingDate;
+      });
+      
+      if (previousReading) {
+        // Include the previous reading at the start, but marked with 
+        // consumption = 0 since it's from previous period
+        setFilteredReadings([
+          { ...previousReading, consumption: 0 },
+          ...periodReadings
+        ]);
+      } else {
+        setFilteredReadings(periodReadings);
+      }
+    } else {
+      setFilteredReadings([]);
+    }
+
   }, [periods, activePeriod]);
 
   const handlePeriodChange = (period: string) => {

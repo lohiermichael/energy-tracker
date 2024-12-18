@@ -17,24 +17,18 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
   const isNewPeriod = readings.length === 1;
 
   const getTotalConsumption = () => {
-    if (isNewPeriod) {
-      // For first reading, use its consumption value
-      return readings[0].consumption;
-    }
-
-    // Otherwise calculate normally for multiple readings
+    if (readings.length <= 1) return 0;
+    
+    // Sum all consumptions except the first reading 
+    // (which is the last reading from previous period)
     return readings.slice(1).reduce((sum, reading) => {
       return sum + reading.consumption;
     }, 0);
   };
 
   const getAverageDailyConsumption = () => {
-    if (isNewPeriod) {
-      // For first reading, use its consumption as the average
-      return readings[0].consumption.toFixed(2);
-    }
-    
     const total = getTotalConsumption();
+    // Subtract 1 from the length because first reading is from previous period
     const days = Math.max(1, readings.length - 1);
     return (total / days).toFixed(2);
   };
