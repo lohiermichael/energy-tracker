@@ -34,22 +34,21 @@ const ConsumptionStats = ({ readings, status }: ConsumptionStatsProps) => {
   const getDaysRemaining = () => {
     if (readings.length === 0) return 0;
 
-    // Get the first reading's date to determine which period we're viewing
-    const firstReading = readings[0];
-    const [day, month, year] = firstReading.date.split('/').map(Number);
-    
-    // If it's a past period, return 0
     const now = new Date();
-    const periodDate = new Date(year, month - 1, day);
-    if (periodDate.getMonth() < now.getMonth() || 
-        periodDate.getFullYear() < now.getFullYear()) {
-      return 0;
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    if (currentDay < 16) {
+      // We're in the first half of the month (1-15)
+      return 15 - currentDay + 1; // +1 to include the current day
+    } else {
+      // We're in the second half of the month (16-31)
+      const nextMonth = new Date(currentYear, currentMonth, 15);
+      const today = new Date(currentYear, currentMonth - 1, currentDay);
+      const diffTime = nextMonth.getTime() - today.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
-
-    // For current period, calculate remaining days until next billing cycle
-    const daysInPeriod = 30;
-    const daysElapsed = readings.length;
-    return Math.max(0, daysInPeriod - daysElapsed);
   };
 
   const getRemainingDaily = () => {
